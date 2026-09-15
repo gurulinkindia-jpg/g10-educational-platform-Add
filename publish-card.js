@@ -8,7 +8,7 @@ function publishedCardHtml(id,title,width,height){
 }
 function downloadPrepared(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
 function showPrepared(){
- $('publishPanel').hidden=false;$('publishedSocial').hidden=true;$('publishedFacebook').hidden=true;
+ $('manualPublishSteps').hidden=false;$('publishPanel').hidden=false;$('publishedSocial').hidden=true;$('publishedFacebook').hidden=true;
  $('publishFiles').textContent=preparedCard.id+'.png and '+preparedCard.id+'.html';
  $('publishUrl').value=publishRoot+preparedCard.id+'.html';
  $('publishStatus').textContent='Files prepared from your current edits. They are not on GitHub yet.';
@@ -31,6 +31,6 @@ $('checkPublished').onclick=async()=>{
   if(preparedCard!==snapshot)return;
   $('publishedFacebook').href='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(url);$('publishedFacebook').hidden=false;$('publishedSocial').hidden=false;renderSocialShares($('publishedSocial'),url,snapshot.title||'G10 Educational Platform');
   $('publishStatus').textContent='Your edited card is live. Choose a social platform below to share this edited version.';
- }catch{if(preparedCard===snapshot)$('publishStatus').textContent='Not live yet. Upload BOTH files to the repository root, click Commit changes, wait for GitHub Pages to deploy, then check again.';}
+ }catch{if(preparedCard===snapshot)$('publishStatus').textContent=snapshot.automatic?'Your card is not live yet. Check the automatic publishing status above.':'Not live yet. Upload BOTH files to the repository root, click Commit changes, wait for GitHub Pages to deploy, then check again.';}
  finally{$('checkPublished').disabled=false;}
 };

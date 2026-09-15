@@ -8,11 +8,11 @@
  $('githubConnect').onclick=async()=>{
   if(busy)return;const value=$('githubToken').value.trim();$('githubToken').value='';if(!value){$('githubStatus').textContent='Paste your GitHub token in the field above first.';return;}
   busy=true;token=value;$('githubConnect').disabled=true;
-  try{const data=await request('');if(data.permissions&&data.permissions.push===false)throw new Error('This GitHub account does not have write access to this repository.');await request('/git/ref/heads/main');$('githubStatus').textContent='Connected to '+repo+'. You can publish your edited card.';$('githubPublish').disabled=false;$('githubDisconnect').disabled=false;}
-  catch(e){token='';$('githubPublish').disabled=true;$('githubStatus').textContent=e.message;}
+  try{const data=await request('');if(data.permissions&&data.permissions.push===false)throw new Error('This GitHub account does not have write access to this repository.');await request('/git/ref/heads/main');$('githubStatus').textContent='Connected to '+repo+'. You can publish your edited card.';$('githubPublish').disabled=false;$('githubDisconnect').disabled=false;$('prepareGithub').hidden=true;}
+  catch(e){token='';$('prepareGithub').hidden=false;$('githubPublish').disabled=true;$('githubStatus').textContent=e.message;}
   finally{busy=false;$('githubConnect').disabled=false;}
  };
- $('githubDisconnect').onclick=()=>{if(busy)return;token='';$('githubToken').value='';$('githubPublish').disabled=true;$('githubDisconnect').disabled=true;$('githubStatus').textContent='Disconnected. Token cleared from this tab.';};
+ $('githubDisconnect').onclick=()=>{if(busy)return;token='';$('prepareGithub').hidden=false;$('githubToken').value='';$('githubPublish').disabled=true;$('githubDisconnect').disabled=true;$('githubStatus').textContent='Disconnected. Token cleared from this tab.';};
  function base64(buffer){const bytes=new Uint8Array(buffer);let s='';for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s);}
  async function commitCard(card){
   const png=await request('/git/blobs','POST',{content:base64(await card.image.arrayBuffer()),encoding:'base64'});
@@ -29,7 +29,7 @@
   if(busy||!token)return;busy=true;$('githubPublish').disabled=true;$('githubConnect').disabled=true;$('githubDisconnect').disabled=true;
   try{
    await logo.decode();const previous=preparedCard;$('prepareGithub').click();const card=preparedCard;if(!card||card===previous)throw new Error('Could not prepare your image. Try again after it loads.');
-   $('githubStatus').textContent='Uploading your edited image and webpage…';await commitCard(card);
+   card.automatic=true;$('manualPublishSteps').hidden=true;$('publishStatus').textContent='Publishing your edited card…';$('githubStatus').textContent='Uploading your edited image and webpage…';await commitCard(card);
    $('githubStatus').textContent='Saved to GitHub. Waiting for the public card to deploy…';
    for(let i=0;i<20;i++){
     if(preparedCard!==card)break;
