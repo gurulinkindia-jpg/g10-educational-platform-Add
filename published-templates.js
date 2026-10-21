@@ -51,6 +51,14 @@
     originalLoad(id);
     if (state?.publishedImage) {
       document.getElementById('status').textContent = 'Loaded saved GitHub card. It is a flattened image; choose a built-in template to edit individual text and colours.';
+      const selectedImage = photo;
+      if (selectedImage) {
+        selectedImage.onerror = () => {
+          if (photo === selectedImage) {
+            document.getElementById('status').textContent = 'The saved GitHub image could not load. Click Refresh GitHub templates and select it again.';
+          }
+        };
+      }
     }
   };
 
