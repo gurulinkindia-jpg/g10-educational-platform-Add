@@ -71,10 +71,42 @@
       </select>
       <button id="addDesignSubject" type="button">Add graphic</button>
     </div>
-    <label for="designEmoji">Add emoji or symbol</label>
+    <label for="designEmojiPicker">Emoji and symbol library</label>
+    <select id="designEmojiPicker">
+      <option value="">Choose an item to add…</option>
+      <optgroup label="Education">
+        <option value="🎓">🎓 Graduation cap</option><option value="📚">📚 Books</option><option value="📖">📖 Open book</option><option value="✏️">✏️ Pencil</option><option value="📝">📝 Notes</option><option value="🏫">🏫 School</option><option value="🧑‍🏫">🧑‍🏫 Teacher</option><option value="🧠">🧠 Brain</option><option value="💡">💡 Idea</option><option value="🏆">🏆 Trophy</option><option value="✅">✅ Completed</option><option value="📌">📌 Pin</option>
+      </optgroup>
+      <optgroup label="Science and Physics">
+        <option value="⚛️">⚛️ Atom</option><option value="🔬">🔬 Microscope</option><option value="🔭">🔭 Telescope</option><option value="⚡">⚡ Energy</option><option value="🧲">🧲 Magnet</option><option value="🔋">🔋 Battery</option><option value="🌡️">🌡️ Temperature</option><option value="☀️">☀️ Sun</option><option value="🌊">🌊 Wave</option><option value="🛰️">🛰️ Satellite</option><option value="🚀">🚀 Rocket</option><option value="🌌">🌌 Space</option>
+      </optgroup>
+      <optgroup label="Chemistry">
+        <option value="🧪">🧪 Test tube</option><option value="⚗️">⚗️ Flask</option><option value="🧫">🧫 Petri dish</option><option value="🧑‍🔬">🧑‍🔬 Scientist</option><option value="💧">💧 Drop</option><option value="🫧">🫧 Bubbles</option><option value="🔥">🔥 Flame</option><option value="❄️">❄️ Crystal</option>
+      </optgroup>
+      <optgroup label="Biology and Nature">
+        <option value="🧬">🧬 DNA</option><option value="🦠">🦠 Microbe</option><option value="🫀">🫀 Heart</option><option value="🫁">🫁 Lungs</option><option value="🌱">🌱 Seedling</option><option value="🌿">🌿 Plant</option><option value="🍃">🍃 Leaf</option><option value="🌸">🌸 Flower</option><option value="🐝">🐝 Bee</option><option value="🦋">🦋 Butterfly</option><option value="🌍">🌍 Earth</option><option value="♻️">♻️ Recycle</option>
+      </optgroup>
+      <optgroup label="Mathematics">
+        <option value="π">π Pi</option><option value="∑">∑ Sum</option><option value="√">√ Square root</option><option value="∞">∞ Infinity</option><option value="≈">≈ Approximately</option><option value="≠">≠ Not equal</option><option value="≤">≤ Less than or equal</option><option value="≥">≥ Greater than or equal</option><option value="±">± Plus or minus</option><option value="÷">÷ Division</option><option value="×">× Multiplication</option><option value="%">% Percent</option><option value="½">½ Fraction</option><option value="∠">∠ Angle</option><option value="🧮">🧮 Abacus</option><option value="📐">📐 Set square</option><option value="📏">📏 Ruler</option><option value="📊">📊 Chart</option>
+      </optgroup>
+      <optgroup label="Shapes and marks">
+        <option value="●">● Solid circle</option><option value="○">○ Circle outline</option><option value="■">■ Solid square</option><option value="□">□ Square outline</option><option value="▲">▲ Solid triangle</option><option value="△">△ Triangle outline</option><option value="◆">◆ Solid diamond</option><option value="◇">◇ Diamond outline</option><option value="★">★ Solid star</option><option value="☆">☆ Star outline</option><option value="♥">♥ Heart</option><option value="♡">♡ Heart outline</option><option value="✓">✓ Tick</option><option value="✕">✕ Cross</option><option value="!">! Exclamation</option><option value="?">? Question</option>
+      </optgroup>
+      <optgroup label="Arrows">
+        <option value="←">← Left</option><option value="↑">↑ Up</option><option value="→">→ Right</option><option value="↓">↓ Down</option><option value="↔">↔ Left and right</option><option value="↕">↕ Up and down</option><option value="↗">↗ Up right</option><option value="↘">↘ Down right</option><option value="➜">➜ Arrow</option><option value="➤">➤ Pointer</option><option value="⬅️">⬅️ Left button</option><option value="➡️">➡️ Right button</option>
+      </optgroup>
+      <optgroup label="Communication and business">
+        <option value="📞">📞 Telephone</option><option value="☎️">☎️ Phone</option><option value="📱">📱 Mobile</option><option value="💬">💬 Message</option><option value="📢">📢 Loudspeaker</option><option value="📣">📣 Megaphone</option><option value="📧">📧 Email</option><option value="🌐">🌐 Website</option><option value="🔗">🔗 Link</option><option value="📍">📍 Location</option><option value="🗓️">🗓️ Calendar</option><option value="⏰">⏰ Time</option><option value="💰">💰 Fees</option><option value="🎯">🎯 Target</option>
+      </optgroup>
+      <optgroup label="Celebration and motivation">
+        <option value="🎉">🎉 Celebration</option><option value="🎊">🎊 Confetti</option><option value="🎈">🎈 Balloon</option><option value="🎁">🎁 Gift</option><option value="✨">✨ Sparkles</option><option value="🌟">🌟 Glowing star</option><option value="🙏">🙏 Greeting</option><option value="🪔">🪔 Diya</option><option value="🎄">🎄 Christmas tree</option><option value="🥳">🥳 Party face</option><option value="👏">👏 Applause</option><option value="💪">💪 Strength</option><option value="👍">👍 Thumbs up</option><option value="❤️">❤️ Red heart</option>
+      </optgroup>
+    </select>
+    <p class="hint" style="margin:5px 0 8px">Choose an item above to add it immediately.</p>
+    <label for="designEmoji">Or type any emoji or symbol</label>
     <div class="row">
       <input id="designEmoji" type="text" value="⭐" maxlength="8" aria-label="Emoji or symbol" style="width:90px">
-      <button id="addDesignEmoji" type="button">Add emoji</button>
+      <button id="addDesignEmoji" type="button">Add typed item</button>
     </div>
     <label for="designSize">Selected element size <output id="designSizeValue">120 px</output></label>
     <input id="designSize" type="range" min="30" max="420" step="5" value="120">
@@ -96,6 +128,7 @@
   const shapeStyle = document.getElementById('designShapeStyle');
   const line = document.getElementById('designLine');
   const subject = document.getElementById('designSubject');
+  const emojiPicker = document.getElementById('designEmojiPicker');
   const emoji = document.getElementById('designEmoji');
   const size = document.getElementById('designSize');
   const sizeValue = document.getElementById('designSizeValue');
@@ -415,16 +448,25 @@
     document.getElementById('status').textContent = 'Subject graphic added. Drag it to position it on the card.';
   });
 
-  document.getElementById('addDesignEmoji').addEventListener('click', () => {
-    const value = emoji.value.trim();
+  function addEmojiElement(rawValue) {
+    const value = rawValue.trim();
     if (!value) return;
     const design = designState();
     const id = `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
     design.elements.push({ id, kind: 'emoji', value, x: .5, y: .5, size: design.size, opacity: design.opacity, rotation: design.rotation || 0 });
     selected = `design:${id}`;
     syncDesignControls(); draw();
-    document.getElementById('status').textContent = 'Emoji added. Drag it to position it on the card.';
+    document.getElementById('status').textContent = `${value} added. Drag it to position it on the card.`;
+  }
+
+  emojiPicker.addEventListener('change', () => {
+    if (!emojiPicker.value) return;
+    emoji.value = emojiPicker.value;
+    addEmojiElement(emojiPicker.value);
+    emojiPicker.value = '';
   });
+
+  document.getElementById('addDesignEmoji').addEventListener('click', () => addEmojiElement(emoji.value));
 
   document.getElementById('removeDesignElement').addEventListener('click', () => {
     const element = selectedElement();
