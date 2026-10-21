@@ -77,6 +77,7 @@
         format = height > width * 1.5 ? 'story' : height > width ? 'portrait' : 'landscape';
       }
     } catch {}
+    const publishedImage = new URL(imageName, location.href).href;
     return {
       id: `published:${entry.name.replace(/\.html$/, '')}`,
       headline,
@@ -89,7 +90,8 @@
       cta: 'VIEW FEE STRUCTURE >',
       buttonColor: '#1764dc',
       buttonText: '#ffffff',
-      publishedImage: new URL(imageName, location.href).href,
+      image: publishedImage,
+      publishedImage,
       publishedPage: pageUrl,
       publishedFormat: format,
       publishedAt: Number(entry.name.match(filePattern)?.[1] || 0),
@@ -132,6 +134,10 @@
         group.append(option);
       }
       templateSelect.prepend(group);
+      const requestedCard = new URLSearchParams(location.search).get('card');
+      if (requestedCard?.startsWith('published:') && publishedCards.some((card) => card.id === requestedCard)) {
+        load(requestedCard);
+      }
       status.textContent = publishedCards.length
         ? `${publishedCards.length} GitHub-saved card${publishedCards.length === 1 ? '' : 's'} added at the top of the Template list.`
         : 'No published GitHub cards were found yet.';
