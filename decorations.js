@@ -39,6 +39,38 @@
       </select>
       <button id="addDesignShape" type="button">Add shape</button>
     </div>
+    <label for="designShapeStyle">Shape style</label>
+    <select id="designShapeStyle">
+      <option value="solid">Solid fill</option>
+      <option value="outline">Outline only</option>
+      <option value="dashed">Dashed outline</option>
+      <option value="dotted">Dotted outline</option>
+    </select>
+    <label for="designLine">Add a line</label>
+    <div class="row">
+      <select id="designLine" style="flex:1">
+        <option value="solid">Solid line</option>
+        <option value="dashed">Dashed line</option>
+        <option value="dotted">Dotted line</option>
+        <option value="arrow">Arrow</option>
+        <option value="double">Double line</option>
+      </select>
+      <button id="addDesignLine" type="button">Add line</button>
+    </div>
+    <label for="designSubject">Add a subject graphic</label>
+    <div class="row">
+      <select id="designSubject" style="flex:1">
+        <option value="atom">Physics · Atom</option>
+        <option value="lightning">Physics · Energy</option>
+        <option value="flask">Chemistry · Flask</option>
+        <option value="dna">Biology · DNA</option>
+        <option value="leaf">Biology · Leaf</option>
+        <option value="pi">Mathematics · Pi</option>
+        <option value="geometry">Mathematics · Geometry</option>
+        <option value="microscope">Science · Microscope</option>
+      </select>
+      <button id="addDesignSubject" type="button">Add graphic</button>
+    </div>
     <label for="designEmoji">Add emoji or symbol</label>
     <div class="row">
       <input id="designEmoji" type="text" value="⭐" maxlength="8" aria-label="Emoji or symbol" style="width:90px">
@@ -46,11 +78,13 @@
     </div>
     <label for="designSize">Selected element size <output id="designSizeValue">120 px</output></label>
     <input id="designSize" type="range" min="30" max="420" step="5" value="120">
+    <label for="designRotation">Selected element rotation <output id="designRotationValue">0°</output></label>
+    <input id="designRotation" type="range" min="-180" max="180" step="5" value="0">
     <div class="row">
       <button id="removeDesignElement" type="button">Remove selected element</button>
       <button id="clearDesignElements" type="button">Clear designs</button>
     </div>
-    <p class="hint">Click a shape or emoji on the card, then drag it. Use the size, colour and opacity controls to customise the selected element.</p>
+    <p class="hint">Click any shape, line, subject graphic or emoji on the card, then drag it. Use the style, size, rotation, colour and opacity controls to customise it.</p>
   `;
   controls.insertBefore(panel, fields);
 
@@ -59,9 +93,14 @@
   const color = document.getElementById('designColor');
   const opacity = document.getElementById('designOpacity');
   const shape = document.getElementById('designShape');
+  const shapeStyle = document.getElementById('designShapeStyle');
+  const line = document.getElementById('designLine');
+  const subject = document.getElementById('designSubject');
   const emoji = document.getElementById('designEmoji');
   const size = document.getElementById('designSize');
   const sizeValue = document.getElementById('designSizeValue');
+  const rotation = document.getElementById('designRotation');
+  const rotationValue = document.getElementById('designRotationValue');
 
   function designState() {
     state.design ||= {
@@ -70,6 +109,8 @@
       color: '#ffda70',
       opacity: 75,
       size: 120,
+      shapeStyle: 'solid',
+      rotation: 0,
       elements: [],
     };
     state.design.elements ||= [];
@@ -90,7 +131,10 @@
     color.value = element?.color || design.color || '#ffda70';
     opacity.value = element?.opacity ?? design.opacity ?? 75;
     size.value = element?.size || design.size || 120;
+    shapeStyle.value = element?.style || design.shapeStyle || 'solid';
+    rotation.value = element?.rotation ?? design.rotation ?? 0;
     sizeValue.value = `${size.value} px`;
+    rotationValue.value = `${rotation.value}°`;
   }
 
   function rgba(hex, alpha) {
@@ -175,6 +219,63 @@
     }
   }
 
+  function drawSubjectGraphic(kind, elementSize, ink) {
+    const half = elementSize / 2;
+    const stroke = Math.max(4, elementSize / 22);
+    ctx.strokeStyle = ink;
+    ctx.fillStyle = ink;
+    ctx.lineWidth = stroke;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (kind === 'atom') {
+      for (const angle of [0, Math.PI / 3, -Math.PI / 3]) {
+        ctx.save(); ctx.rotate(angle); ctx.beginPath(); ctx.ellipse(0, 0, half, half * .38, 0, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+      }
+      ctx.beginPath(); ctx.arc(0, 0, Math.max(7, elementSize * .08), 0, Math.PI * 2); ctx.fill();
+    } else if (kind === 'flask') {
+      ctx.beginPath();
+      ctx.moveTo(-half * .2, -half); ctx.lineTo(half * .2, -half); ctx.lineTo(half * .2, -half * .25);
+      ctx.lineTo(half * .72, half * .72); ctx.quadraticCurveTo(0, half, -half * .72, half * .72);
+      ctx.lineTo(-half * .2, -half * .25); ctx.closePath(); ctx.stroke();
+      ctx.save(); ctx.globalAlpha *= .45; ctx.beginPath(); ctx.moveTo(-half * .55, half * .35); ctx.quadraticCurveTo(0, half * .1, half * .55, half * .35); ctx.lineTo(half * .72, half * .72); ctx.quadraticCurveTo(0, half, -half * .72, half * .72); ctx.closePath(); ctx.fill(); ctx.restore();
+      for (const [x, y, radius] of [[-.35, -.05, .07], [.05, .22, .06], [.35, .02, .09]]) { ctx.beginPath(); ctx.arc(half * x, half * y, elementSize * radius, 0, Math.PI * 2); ctx.stroke(); }
+    } else if (kind === 'dna') {
+      ctx.beginPath();
+      for (let step = -10; step <= 10; step++) { const y = step * half / 10; const x = Math.sin(step * Math.PI / 5) * half * .45; if (step === -10) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+      ctx.stroke(); ctx.beginPath();
+      for (let step = -10; step <= 10; step++) { const y = step * half / 10; const x = -Math.sin(step * Math.PI / 5) * half * .45; if (step === -10) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+      ctx.stroke();
+      for (let step = -8; step <= 8; step += 4) { const y = step * half / 10; const x = Math.sin(step * Math.PI / 5) * half * .45; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(-x, y); ctx.stroke(); }
+    } else if (kind === 'leaf') {
+      ctx.beginPath(); ctx.moveTo(-half * .8, half * .65); ctx.bezierCurveTo(-half * .75, -half * .75, half * .65, -half, half * .8, -half * .7); ctx.bezierCurveTo(half * .9, half * .45, -half * .15, half * .9, -half * .8, half * .65); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-half * .7, half * .58); ctx.lineTo(half * .58, -half * .58); ctx.stroke();
+      for (const t of [-.35, 0, .35]) { ctx.beginPath(); ctx.moveTo(t * half, -t * half); ctx.lineTo((t - .25) * half, (-t - .28) * half); ctx.stroke(); }
+    } else if (kind === 'pi') {
+      ctx.font = `bold ${elementSize * .95}px Georgia, serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('π', 0, 0);
+      ctx.font = `bold ${elementSize * .2}px Arial`; ctx.fillText('x² + y²', 0, half * .82);
+    } else if (kind === 'geometry') {
+      ctx.beginPath(); ctx.moveTo(-half * .85, half * .72); ctx.lineTo(half * .78, half * .72); ctx.lineTo(half * .28, -half * .7); ctx.closePath(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(-half * .4, half * .35, half * .26, -Math.PI / 3, 0); ctx.stroke();
+      ctx.beginPath(); ctx.arc(half * .28, -half * .7, Math.max(5, stroke), 0, Math.PI * 2); ctx.fill();
+    } else if (kind === 'microscope') {
+      ctx.beginPath(); ctx.arc(-half * .05, -half * .05, half * .42, -Math.PI * .35, Math.PI * .75); ctx.stroke();
+      ctx.save(); ctx.rotate(-Math.PI / 4); ctx.strokeRect(-half * .2, -half * .88, half * .4, half * .72); ctx.restore();
+      ctx.beginPath(); ctx.moveTo(-half * .55, half * .2); ctx.lineTo(half * .55, half * .2); ctx.moveTo(0, half * .2); ctx.lineTo(half * .28, half * .72); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-half * .65, half * .78); ctx.lineTo(half * .65, half * .78); ctx.stroke();
+    } else {
+      ctx.beginPath(); ctx.moveTo(half * .05, -half); ctx.lineTo(-half * .55, half * .05); ctx.lineTo(-half * .08, half * .05); ctx.lineTo(-half * .35, half); ctx.lineTo(half * .62, -half * .2); ctx.lineTo(half * .15, -half * .2); ctx.closePath(); ctx.fill();
+    }
+  }
+
+  function applyOutlineStyle(style, elementSize, ink) {
+    ctx.fillStyle = ink;
+    ctx.strokeStyle = ink;
+    ctx.lineWidth = Math.max(4, elementSize / 18);
+    ctx.lineJoin = 'round';
+    ctx.lineCap = style === 'dotted' ? 'round' : 'butt';
+    ctx.setLineDash(style === 'dashed' ? [elementSize * .12, elementSize * .08] : style === 'dotted' ? [1, elementSize * .1] : []);
+  }
+
   function drawElements(design) {
     for (const element of design.elements) {
       const key = `design:${element.id}`;
@@ -182,20 +283,36 @@
       const x = canvas.width * (element.x ?? .5) + movement.x;
       const y = canvas.height * (element.y ?? .5) + movement.y;
       const elementSize = Number(element.size) || 120;
+      const ink = element.color || design.color || '#ffda70';
       ctx.save();
       ctx.globalAlpha = Math.max(.1, Math.min(1, (element.opacity ?? 75) / 100));
+      ctx.translate(x, y);
+      ctx.rotate((Number(element.rotation) || 0) * Math.PI / 180);
       if (element.kind === 'emoji') {
         ctx.font = `${elementSize}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(element.value || '⭐', x, y);
-        register(key, x - elementSize / 2, y - elementSize / 2, elementSize, elementSize);
+        ctx.fillText(element.value || '⭐', 0, 0);
+      } else if (element.kind === 'line') {
+        applyOutlineStyle(element.value, elementSize, ink);
+        const half = elementSize / 2;
+        if (element.value === 'double') {
+          ctx.beginPath(); ctx.moveTo(-half, -ctx.lineWidth); ctx.lineTo(half, -ctx.lineWidth); ctx.moveTo(-half, ctx.lineWidth); ctx.lineTo(half, ctx.lineWidth); ctx.stroke();
+        } else {
+          ctx.beginPath(); ctx.moveTo(-half, 0); ctx.lineTo(half, 0); ctx.stroke();
+          if (element.value === 'arrow') {
+            ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(half, 0); ctx.lineTo(half - elementSize * .18, -elementSize * .12); ctx.moveTo(half, 0); ctx.lineTo(half - elementSize * .18, elementSize * .12); ctx.stroke();
+          }
+        }
+      } else if (element.kind === 'subject') {
+        drawSubjectGraphic(element.value, elementSize, ink);
       } else {
-        ctx.fillStyle = element.color || design.color || '#ffda70';
-        shapePath(element.kind, x, y, elementSize);
-        ctx.fill();
-        register(key, x - elementSize / 2, y - elementSize / 2, elementSize, elementSize);
+        const style = element.style || 'solid';
+        applyOutlineStyle(style, elementSize, ink);
+        shapePath(element.kind, 0, 0, elementSize);
+        if (style === 'solid') ctx.fill(); else ctx.stroke();
       }
       ctx.restore();
+      register(key, x - elementSize / 2, y - elementSize / 2, elementSize, elementSize);
     }
   }
 
@@ -249,12 +366,17 @@
       element.color = color.value;
       element.opacity = Number(opacity.value);
       element.size = Number(size.value);
+      element.style = shapeStyle.value;
+      element.rotation = Number(rotation.value);
     } else {
       design.color = color.value;
       design.opacity = Number(opacity.value);
       design.size = Number(size.value);
+      design.shapeStyle = shapeStyle.value;
+      design.rotation = Number(rotation.value);
     }
     sizeValue.value = `${size.value} px`;
+    rotationValue.value = `${rotation.value}°`;
     draw();
   }
 
@@ -263,14 +385,34 @@
   color.addEventListener('input', updateStyle);
   opacity.addEventListener('input', updateStyle);
   size.addEventListener('input', updateStyle);
+  shapeStyle.addEventListener('change', updateStyle);
+  rotation.addEventListener('input', updateStyle);
 
   document.getElementById('addDesignShape').addEventListener('click', () => {
     const design = designState();
     const id = `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
-    design.elements.push({ id, kind: shape.value, x: .5, y: .5, size: design.size, color: design.color, opacity: design.opacity });
+    design.elements.push({ id, kind: shape.value, x: .5, y: .5, size: design.size, color: design.color, opacity: design.opacity, style: design.shapeStyle || 'solid', rotation: design.rotation || 0 });
     selected = `design:${id}`;
     syncDesignControls(); draw();
     document.getElementById('status').textContent = 'Shape added. Drag it to position it on the card.';
+  });
+
+  document.getElementById('addDesignLine').addEventListener('click', () => {
+    const design = designState();
+    const id = `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+    design.elements.push({ id, kind: 'line', value: line.value, x: .5, y: .5, size: design.size, color: design.color, opacity: design.opacity, rotation: design.rotation || 0 });
+    selected = `design:${id}`;
+    syncDesignControls(); draw();
+    document.getElementById('status').textContent = 'Line added. Drag it into place, then use rotation to change its angle.';
+  });
+
+  document.getElementById('addDesignSubject').addEventListener('click', () => {
+    const design = designState();
+    const id = `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
+    design.elements.push({ id, kind: 'subject', value: subject.value, x: .5, y: .5, size: design.size, color: design.color, opacity: design.opacity, rotation: design.rotation || 0 });
+    selected = `design:${id}`;
+    syncDesignControls(); draw();
+    document.getElementById('status').textContent = 'Subject graphic added. Drag it to position it on the card.';
   });
 
   document.getElementById('addDesignEmoji').addEventListener('click', () => {
@@ -278,7 +420,7 @@
     if (!value) return;
     const design = designState();
     const id = `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`;
-    design.elements.push({ id, kind: 'emoji', value, x: .5, y: .5, size: design.size, opacity: design.opacity });
+    design.elements.push({ id, kind: 'emoji', value, x: .5, y: .5, size: design.size, opacity: design.opacity, rotation: design.rotation || 0 });
     selected = `design:${id}`;
     syncDesignControls(); draw();
     document.getElementById('status').textContent = 'Emoji added. Drag it to position it on the card.';
@@ -286,7 +428,7 @@
 
   document.getElementById('removeDesignElement').addEventListener('click', () => {
     const element = selectedElement();
-    if (!element) { document.getElementById('status').textContent = 'Select a shape or emoji on the card first.'; return; }
+    if (!element) { document.getElementById('status').textContent = 'Select a design element on the card first.'; return; }
     designState().elements = designState().elements.filter((candidate) => candidate.id !== element.id);
     delete positions()[`design:${element.id}`];
     selected = null; syncDesignControls(); draw();
@@ -297,7 +439,7 @@
     for (const element of design.elements) delete positions()[`design:${element.id}`];
     design.elements = []; design.pattern = 'none'; design.frame = 'none'; selected = null;
     syncDesignControls(); draw();
-    document.getElementById('status').textContent = 'Patterns, frames, shapes and emojis cleared.';
+    document.getElementById('status').textContent = 'Patterns, frames, shapes, lines, graphics and emojis cleared.';
   });
 
   canvas.addEventListener('pointerup', () => setTimeout(syncDesignControls));
