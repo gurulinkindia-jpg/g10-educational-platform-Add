@@ -1,18 +1,26 @@
 (()=>{
  const repo='gurulinkindia-jpg/g10-educational-platform-Add',api='https://api.github.com/repos/'+repo;
+ const tokenStorageKey='g10-github-publish-token';
  let token='',busy=false;
+ try{token=sessionStorage.getItem(tokenStorageKey)||'';}catch{}
+ const connectionIntro=document.querySelector('#githubConnection>p');
+ if(connectionIntro)connectionIntro.innerHTML='Connect to <strong>'+repo+'</strong> to publish both files with one button. The token is sent only to GitHub, is kept only in this browser tab, and is restored automatically if this page reloads.';
  async function request(path,method='GET',body){
   const r=await fetch(api+path,{method,headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+token,'Content-Type':'application/json','X-GitHub-Api-Version':'2022-11-28'},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(45000)});
   if(!r.ok){const e=new Error(r.status===401?'Token rejected. Connect again with a valid token.':r.status===403?'GitHub refused access. Check Contents: Read and write permission and token expiry.':r.status===404?'Repository access was not granted to this token.':'GitHub request failed ('+r.status+'). Your existing files are unchanged.');e.status=r.status;throw e;}return r.json();
  }
- $('githubConnect').onclick=async()=>{
-  if(busy)return;const value=$('githubToken').value.trim();$('githubToken').value='';if(!value){$('githubStatus').textContent='Paste your GitHub token in the field above first.';return;}
+ async function connect(value,restoring=false){
+  if(busy)return;if(!value){$('githubStatus').textContent='The token field is empty. Paste your GitHub token above, then click Connect GitHub.';return;}
   busy=true;token=value;$('githubConnect').disabled=true;
-  try{const data=await request('');if(data.permissions&&data.permissions.push===false)throw new Error('This GitHub account does not have write access to this repository.');await request('/git/ref/heads/main');$('githubStatus').textContent='Connected to '+repo+'. You can publish your edited card.';$('githubPublish').disabled=false;$('githubDisconnect').disabled=false;$('prepareGithub').hidden=true;}
-  catch(e){token='';$('prepareGithub').hidden=false;$('githubPublish').disabled=true;$('githubStatus').textContent=e.message;}
+  $('githubStatus').textContent=restoring?'Restoring your GitHub connection…':'Connecting to GitHub…';
+  try{const data=await request('');if(data.permissions&&data.permissions.push===false)throw new Error('This GitHub account does not have write access to this repository.');await request('/git/ref/heads/main');try{sessionStorage.setItem(tokenStorageKey,token);}catch{}$('githubStatus').textContent='Connected to '+repo+'. You can publish your edited card.';$('githubPublish').disabled=false;$('githubDisconnect').disabled=false;$('prepareGithub').hidden=true;}
+  catch(e){token='';try{sessionStorage.removeItem(tokenStorageKey);}catch{}$('prepareGithub').hidden=false;$('githubPublish').disabled=true;$('githubDisconnect').disabled=true;$('githubStatus').textContent=e.message;}
   finally{busy=false;$('githubConnect').disabled=false;}
+ }
+ $('githubConnect').onclick=async()=>{
+  if(busy)return;const value=$('githubToken').value.trim()||token;$('githubToken').value='';await connect(value);
  };
- $('githubDisconnect').onclick=()=>{if(busy)return;token='';$('prepareGithub').hidden=false;$('githubToken').value='';$('githubPublish').disabled=true;$('githubDisconnect').disabled=true;$('githubStatus').textContent='Disconnected. Token cleared from this tab.';};
+ $('githubDisconnect').onclick=()=>{if(busy)return;token='';try{sessionStorage.removeItem(tokenStorageKey);}catch{}$('prepareGithub').hidden=false;$('githubToken').value='';$('githubPublish').disabled=true;$('githubDisconnect').disabled=true;$('githubStatus').textContent='Disconnected. Token cleared from this tab.';};
  function base64(buffer){const bytes=new Uint8Array(buffer);let s='';for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s);}
  async function commitCard(card){
   const png=await request('/git/blobs','POST',{content:base64(await card.image.arrayBuffer()),encoding:'base64'});
@@ -40,4 +48,5 @@
   }catch(e){$('githubStatus').textContent=e.message+' If the connection was interrupted, check My published cards before trying again.';}
   finally{busy=false;$('githubPublish').disabled=!token;$('githubConnect').disabled=false;$('githubDisconnect').disabled=!token;}
  };
+ if(token)setTimeout(()=>connect(token,true));
 })();
