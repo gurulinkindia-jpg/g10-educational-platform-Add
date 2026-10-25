@@ -7,6 +7,12 @@ const competitionCards=[
 ];
 cards.unshift(...competitionCards);
 const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d');let photo=null,state;
+const buttonBackgroundToggle=document.createElement('button');
+buttonBackgroundToggle.id='toggleButtonBackground';
+buttonBackgroundToggle.type='button';
+buttonBackgroundToggle.textContent='Remove button background';
+$('resetPositions').after(buttonBackgroundToggle);
+buttonBackgroundToggle.onclick=()=>{state.buttonHidden=!state.buttonHidden;if(state.buttonHidden){state.buttonTextColorBeforeHide=state.colors.cta;state.colors.cta='#ffffff';}else if(state.buttonTextColorBeforeHide){state.colors.cta=state.buttonTextColorBeforeHide;delete state.buttonTextColorBeforeHide;}sync();$('status').textContent=state.buttonHidden?'Button background removed. The button text remains editable.':'Button background restored.';};
 $('logoScale').max=400;$('photoScale').max=400;
 canvas.setAttribute('aria-label','Advertisement preview. Select an element, drag its centre to move it, or drag a corner or side handle to resize it.');
 document.querySelector('.preview > .hint').textContent='Click an image, logo, text, shape, line, graphic or emoji to select it. Drag its centre to move it; drag a corner or side handle to resize it. Arrow keys move the selected element precisely.';
@@ -21,15 +27,16 @@ $('activePhoto').onchange=()=>{activePhoto=$('activePhoto').value;selected=activ
 $('addPhotos').onchange=async()=>{const files=[...$('addPhotos').files],generation=uploadGeneration;$('addPhotos').value='';let added=0,failed=0;for(const file of files){if(file.size>15000000){failed++;continue;}const url=URL.createObjectURL(file),img=new Image();try{img.src=url;await img.decode();if(generation!==uploadGeneration)return;const key='extra-'+(++photoSequence);extraPhotos.push({key,img,name:file.name,scale:100});activePhoto=key;selected=key;added++;}catch{failed++;}finally{URL.revokeObjectURL(url);}}syncPhotoControls();draw();$('status').textContent=added+' image(s) added.'+(failed?' Some files could not load; use PNG, JPG or WebP under 15 MB.':' Drag each image to position it.');};
 let artToken=0;
 function setTemplateArt(c){const token=++artToken;uploadGeneration++;extraPhotos=[];activePhoto='photo';photo=null;syncPhotoControls();if(!c.image)return;const img=new Image();img.onload=()=>{if(token===artToken){photo=img;draw();}};img.src=c.image;}
-function sync(){for(const key of ['logoScale','photoScale']){state[key]=Number(state[key])||100;$(key).value=state[key];$(key+'Value').value=state[key]+'%';}syncPhotoControls();$('bg').value=state.bg;$('buttonColor').value=state.buttonColor;$('logoY').value=state.logoY;$('format').value=state.format;$('fields').replaceChildren();for(const [key,label] of defs){const div=document.createElement('div');div.className='field';const l=document.createElement('label');l.textContent=label;l.htmlFor='text-'+key;const input=document.createElement('textarea');input.id='text-'+key;input.value=state.text[key];input.oninput=()=>{state.text[key]=input.value;draw()};const row=document.createElement('div');row.className='row';const size=document.createElement('input');size.type='number';size.min=12;size.max=100;size.value=state.sizes[key];size.setAttribute('aria-label',label+' font size');size.oninput=()=>{state.sizes[key]=Math.max(12,Math.min(100,Number(size.value)||12));draw()};const color=document.createElement('input');color.type='color';color.value=state.colors[key];color.setAttribute('aria-label',label+' colour');color.oninput=()=>{state.colors[key]=color.value;draw()};row.append('Size ',size,' Colour ',color);div.append(l,input,row);$('fields').append(div);}draw();}
+function sync(){for(const key of ['logoScale','photoScale']){state[key]=Number(state[key])||100;$(key).value=state[key];$(key+'Value').value=state[key]+'%';}syncPhotoControls();buttonBackgroundToggle.textContent=state.buttonHidden?'Restore button background':'Remove button background';$('bg').value=state.bg;$('buttonColor').value=state.buttonColor;$('logoY').value=state.logoY;$('format').value=state.format;$('fields').replaceChildren();for(const [key,label] of defs){const div=document.createElement('div');div.className='field';const l=document.createElement('label');l.textContent=label;l.htmlFor='text-'+key;const input=document.createElement('textarea');input.id='text-'+key;input.value=state.text[key];input.oninput=()=>{state.text[key]=input.value;draw()};const row=document.createElement('div');row.className='row';const size=document.createElement('input');size.type='number';size.min=12;size.max=100;size.value=state.sizes[key];size.setAttribute('aria-label',label+' font size');size.oninput=()=>{state.sizes[key]=Math.max(12,Math.min(100,Number(size.value)||12));draw()};const color=document.createElement('input');color.type='color';color.value=state.colors[key];color.setAttribute('aria-label',label+' colour');color.oninput=()=>{state.colors[key]=color.value;draw()};row.append('Size ',size,' Colour ',color);div.append(l,input,row);$('fields').append(div);}draw();}
 let hitBoxes=[],selected=null,drag=null,exporting=false;
 function positions(){state.positions ||= {};return state.positions[state.format] ||= {};}
 function offset(key){return positions()[key]||{x:0,y:0};}
 function register(key,x,y,w,h){const m=ctx.getTransform();hitBoxes.push({key,x:x*m.a+m.e,y:y*m.d+m.f,w:w*m.a,h:h*m.d});}
 function fitImage(img,x,y,w,h,key=img===logo?'logo':'photo',customScale){const o=offset(key);x+=o.x;y+=o.y;const scale=(Number(customScale??state[key==='logo'?'logoScale':'photoScale'])||100)/100;const ratio=Math.min(w/img.naturalWidth,h/img.naturalHeight)*scale,iw=img.naturalWidth*ratio,ih=img.naturalHeight*ratio;const left=x+(w-iw)/2,top=y+(h-ih)/2;ctx.drawImage(img,left,top,iw,ih);register(key,left,top,iw,ih);}
 function txt(key,x,y,w){let size=state.sizes[key];const text=state.text[key].replace(/\s+/g,' ').trim();ctx.font='bold '+size+'px Arial';while(ctx.measureText(text).width>w&&size>12){size--;ctx.font='bold '+size+'px Arial'}const o=offset(key),b=key==='cta'?offset('button'):{x:0,y:0},m=ctx.getTransform();x+=(o.x+b.x)/m.a;y+=(o.y+b.y)/m.d;ctx.fillStyle=state.colors[key];ctx.fillText(text,x,y);const metrics=ctx.measureText(text);register(key,x,y-size,Math.max(metrics.width,15),size*1.3);}
-function drawButton(x,y,w,h){const o=offset('button');ctx.fillRect(x+o.x,y+o.y,w,h);register('button',x+o.x,y+o.y,w,h);}
+function drawButton(x,y,w,h){state.buttonSizes ||= {};const saved=state.buttonSizes[state.format];if(saved){w=saved.w;h=saved.h;}const o=offset('button');if(!state.buttonHidden)ctx.fillRect(x+o.x,y+o.y,w,h);register('button',x+o.x,y+o.y,w,h);}
 function resizeTarget(key){
+  if(key==='button')return{kind:'button',min:30,max:1200,get:()=>100,set:()=>{}};
   if(key==='logo')return{kind:'image',min:25,max:400,get:()=>Number(state.logoScale)||100,set:value=>{state.logoScale=value;$('logoScale').value=value;$('logoScaleValue').value=Math.round(value)+'%';}};
   if(key==='photo')return{kind:'image',min:25,max:400,get:()=>Number(state.photoScale)||100,set:value=>{state.photoScale=value;$('photoScale').value=value;$('photoScaleValue').value=Math.round(value)+'%';}};
   const extra=extraPhotos.find(item=>item.key===key);
@@ -105,6 +112,16 @@ function resizeFactor(p,operation){
   return Math.max(.05,horizontal??vertical??1);
 }
 function resizeSelected(operation,p){
+  if(operation.key==='button'){
+    const dx=p.x-operation.start.x,dy=p.y-operation.start.y,handle=operation.handle,base=operation.box,minW=80,minH=30;
+    let w=base.w,h=base.h,moveX=0,moveY=0;
+    if(handle.includes('e'))w=Math.max(minW,base.w+dx);
+    if(handle.includes('w')){w=Math.max(minW,base.w-dx);moveX=base.w-w;}
+    if(handle.includes('s'))h=Math.max(minH,base.h+dy);
+    if(handle.includes('n')){h=Math.max(minH,base.h-dy);moveY=base.h-h;}
+    state.buttonSizes ||= {};state.buttonSizes[state.format]={w:Math.round(w),h:Math.round(h)};
+    positions().button={x:operation.baseOffset.x+moveX,y:operation.baseOffset.y+moveY};draw();return;
+  }
   const target=resizeTarget(operation.key);if(!target)return;
   const requested=resizeFactor(p,operation);
   const value=Math.max(target.min,Math.min(target.max,operation.baseValue*requested));
